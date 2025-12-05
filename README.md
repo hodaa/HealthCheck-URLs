@@ -7,6 +7,8 @@ they want monitored, and get detailed uptime reports about their availability, a
 ## Installation
 
 * `docker-compose up -d`
+* add
+
 
 
 

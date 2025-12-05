@@ -1,14 +1,14 @@
-version: '3.7'
 services:
-
-
   nodejs:
     # restart: always
     build: .
     ports:
       - 4000:4000
-    volumes:
-      - ./:/code
+    environment:
+      - MONGO_URI=mongodb://db:27017/healthcheck
+    depends_on:
+      db:
+        condition: service_healthy
 
 
   db:
@@ -19,6 +19,11 @@ services:
     volumes:
       - data:/data/db
       - config:/data/configdb
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.runCommand({ ping: 1 })"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
 
   mongo-express:
@@ -26,7 +31,8 @@ services:
       ports:
         - 8082:8081
       depends_on:
-        - "db"
+        db:
+          condition: service_healthy
       environment:
         - ME_CONFIG_OPTIONS_EDITORTHEME=ambiance
         - ME_CONFIG_MONGODB_URL=mongodb://db:27017
