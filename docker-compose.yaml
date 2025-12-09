@@ -15,7 +15,7 @@ services:
     image: mongo
     ports:
       - 27018:27017
-    hostname: db
+    hostname: dbx
     volumes:
       - data:/data/db
       - config:/data/configdb
@@ -34,8 +34,10 @@ services:
         db:
           condition: service_healthy
       environment:
-        - ME_CONFIG_OPTIONS_EDITORTHEME=ambiance
-        - ME_CONFIG_MONGODB_URL=mongodb://db:27017
+        # - ME_CONFIG_OPTIONS_EDITORTHEME=db
+        - ME_CONFIG_MONGODB_URL=mongodb://db:27017/healthcheck
+        - ME_CONFIG_MONGODB_SERVER=db
+        # - ME_CONFIG_MONGODB_PORT=27017
       #   - VCAP_APP_PORT=8082
       #   - ME_CONFIG_MONGODB_ENABLE_ADMIN=TRUE
       #   - VCAP_APP_HOST=localhost
