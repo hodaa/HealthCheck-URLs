@@ -1,5 +1,5 @@
 import 'dotenv/config';
-// import './dist/config/database.js'
+import './config/database.js';
 import express from "express";
 import swaggerUI from 'swagger-ui-express';
 const app = express();

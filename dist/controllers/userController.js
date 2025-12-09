@@ -15,7 +15,7 @@ export const register = async (req, res) => {
     const { first_name, last_name, email, password } = req.body;
     const oldUser = await User.findOne({ email });
     if (oldUser)
-        return res.status(400).send({ message: 'User already registered.' });
+        return res.status(400).send({ message: "User already registered." });
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         res.status(422).json({ errors: errors.array() });
@@ -26,14 +26,17 @@ export const register = async (req, res) => {
         first_name,
         last_name,
         email,
-        password: encryptedPassword
+        password: encryptedPassword,
     });
-    const tokenPayload = { user_id: String(user._id), email: user.email };
-    const token = jwt.sign(tokenPayload, process.env.TOKEN_KEY || 'secret', {
-        expiresIn: '2h'
+    const tokenPayload = {
+        user_id: String(user._id),
+        email: user.email,
+    };
+    const token = jwt.sign(tokenPayload, process.env.TOKEN_KEY || "secret", {
+        expiresIn: "2h",
     });
-    const confirmationCode = crypto.randomBytes(20).toString('hex');
-    user.status = 'Pending';
+    const confirmationCode = crypto.randomBytes(20).toString("hex");
+    user.status = "up";
     user.confirmation_code = confirmationCode;
     user.token = token;
     await user.save();
@@ -43,7 +46,7 @@ export const register = async (req, res) => {
   Please confirm your email`;
     // Send email in background (don't wait for it)
     emailService.sendEmail(user.email, "Confirmation Email", body);
-    res.status(201).json({ message: 'Please check your Email for confirmation' });
+    res.status(201).json({ message: "Please check your Email for confirmation" });
 };
 /**
  * @param {*} req
@@ -54,18 +57,18 @@ export const verify = (req, res, next) => {
     User.findOne({ confirmation_code: req.params.confirmation_code })
         .then((user) => {
         if (!user) {
-            return res.status(404).send({ message: 'User Not found.' });
+            return res.status(404).send({ message: "User Not found." });
         }
-        user.status = 'Active';
+        user.status = "Active";
         user.confirmation_code = null;
         user.save((err) => {
             if (err) {
                 res.status(500).send({ message: err });
             }
-            return res.status(200).send({ message: 'Your email is activated' });
+            return res.status(200).send({ message: "Your email is activated" });
         });
     })
-        .catch((e) => console.log('error', e));
+        .catch((e) => console.log("error", e));
 };
 /**
  * @param {*} req
@@ -80,18 +83,26 @@ export const login = async (req, res) => {
     }
     try {
         const { email, password } = req.body;
-        const user = await User.findOne({ email, status: 'Active' });
+        const user = (await User.findOne({ email, status: "up" }));
+        const mtc = await bcrypt.compare(password, user.password);
         if (user && (await bcrypt.compare(password, user.password))) {
-            // Create token
-            const tokenPayload = { user_id: String(user._id), email: user.email };
-            const token = jwt.sign(tokenPayload, process.env.TOKEN_KEY || 'secret', { expiresIn: '2h' });
+            console.log("if ");
+            const tokenPayload = {
+                user_id: String(user._id),
+                email: user.email,
+            };
+            const token = jwt.sign(tokenPayload, process.env.TOKEN_KEY || "secret", {
+                expiresIn: "2h",
+            });
             // save user token
             user.token = token;
             // user
-            res.status(200).json({ message: 'You logged in successfully', token: token });
+            res
+                .status(200)
+                .json({ message: "You logged in successfully", token: token });
         }
         // return new user
-        res.status(400).json({ message: 'Invalid Credentials' });
+        res.status(400).json({ message: "Invalid Credentials" });
     }
     catch (err) {
         console.log(err);
